@@ -12,7 +12,7 @@ class Suffix(Enum):
 class FileSplitter():
 
     @staticmethod
-    def split_h5(path, n_chunks: int) -> None:
+    def split_h5(path, n_chunks: int = 1) -> None:
         pass
 
     def __init__(self, path):
