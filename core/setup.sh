@@ -8,8 +8,8 @@ apt-get install python-pip
 sudo apt-get install sqlite3
 pip install python-swiftclient
 pip install python-keystoneclient
-apt-get install s3cmd
-curl https://rclone.org/install.sh | bash
+sudo apt-get install s3cmd
+sudo curl https://rclone.org/install.sh | bash
 
 
 ## Load environment variables:
