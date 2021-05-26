@@ -11,13 +11,13 @@ CREATE TABLE IF NOT EXISTS Experiment (
     cluster         TEXT NOT NULL,
     node            TEXT NOT NULL,
     tool            TEXT NOT NULL,
-    file_split_size TEXT NOT NULL,
-    segment_size    TEXT NOT NULL,
+    file_split_size UNSIGNED BIG INT,   -- in gigabyte
+    segment_size    INTEGER,            -- in gigabyte
     thread          INTEGER,
     core            INTEGER,
     process         INTEGER,
-    transfer_rate   TEXT,
-    transfer_time   TEXT NOT NULL,
+    transfer_rate   INTEGER,            -- in MB/s
+    transfer_time   INTEGER,            -- in minutes
 
     FOREIGN KEY (file) REFERENCES File(name)
 );
