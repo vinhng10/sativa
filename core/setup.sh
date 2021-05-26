@@ -5,6 +5,7 @@
 echo "Installing packages ..."
 apt-get update
 apt-get install python-pip
+sudo apt-get install sqlite3
 pip install python-swiftclient
 pip install python-keystoneclient
 apt-get install s3cmd
