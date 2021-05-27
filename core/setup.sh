@@ -17,11 +17,3 @@ if [ ! -f .env ]
 then
   export $(cat .env | xargs)
 fi
-
-
-## Declare target bucket name for tool experiments:
-readonly SWIFT="vinh-swift-experiemnts"
-#readonly S3CMD="vinh-s3cmd-experiments"
-#readonly RCLONE="vinh-rclone-experiements"
-
-
