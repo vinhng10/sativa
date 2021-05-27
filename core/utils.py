@@ -78,7 +78,8 @@ def save_to_db(db: AnyPath, table: str, *args) -> bool:
         return False
 
 
-def split_file(file: AnyPath, file_split_size: int = 0, suffix_length: int = 4) -> List[Path]:
+def split_file(file: AnyPath, file_split_size: int = 0,
+               suffix_length: int = 4) -> List[Path]:
     """
     Split a file into smaller files. All the split files will locate in dedicated
     folder to separate from other splits (from other experiments).
