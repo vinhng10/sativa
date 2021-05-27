@@ -140,5 +140,69 @@ def split_file(file: AnyPath, file_split_size: int = 0,
     return split_files
 
 
+def upload_file_swift(file: AnyPath, auth_version: str, username: str,
+                      password: str, project: str, auth_url: str,
+                      bucket: str, segment_size: int,
+                      segment_thread: int) -> subprocess.CompletedProcess:
+    """
+    Upload file to cloud storage using Swift.
+
+    Authentication information is in .env file. Please load it
+    to environment variables prior to using this function.
+
+    Parameters
+    ----------
+    file: AnyPath
+        Path to the file to be upload.
+    bucket: str
+        Bucket name.
+    segment_size: int
+        Size of a file segment (in Gigabyte).
+    segment_thread: int
+        Number of threads to upload segments.
+
+    Returns
+    -------
+    result: subprocess.CompletedProcess
+
+    """
+    cmd = f"swift upload " \
+          f"--os-auth-url {auth_url} " \
+          f"--auth-version {auth_version} " \
+          f"--os-project-name {project} " \
+          f"--os-username {username} " \
+          f"--os-password {password} " \
+          f"--use-slo --segment-size {segment_size}G " \
+          f"--segment-threads {segment_thread} " \
+          f"{bucket} " \
+          f"{file}"
+    result = subprocess.run(
+        cmd.split(),
+        capture_output=True,
+        text=True,
+        check=True
+    )
+    return result
 
 
+@retry
+def upload_file_s3cmd() -> subprocess.CompletedProcess:
+    pass
+
+
+@retry
+def upload_file_rclone() -> subprocess.CompletedProcess:
+    pass
+
+
+def upload_file(file: AnyPath, tool: str) -> None:
+    """"""
+    if not isinstance(tool, str):
+        raise TypeError(f"Expected type str for tool, but got {type(tool)} instead.")
+
+    if tool == Tool.SWIFT.value:
+        upload_file_swift()
+    elif tool == Tool.S3CMD.value:
+        upload_file_s3cmd()
+    elif tool == Tool.RCLONE.value:
+        upload_file_rclone()
