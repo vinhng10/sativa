@@ -1,12 +1,48 @@
 import sqlite3
 import subprocess
+from enum import Enum
+from functools import wraps
 from pathlib import Path
 from typing import List, Union
 
 AnyPath = Union[Path, str, bytes]
+RETRY = 3
+
+class Tool(Enum):
+    SWIFT = "swift"
+    S3CMD = "s3cmd"
+    RCLONE = "rclone"
 
 
-def save_to_db(db: AnyPath, table: str, *args) -> None:
+def retry(f):
+    """
+    Retry a function for a fixed amount of time if failed.
+
+    Parameters
+    ----------
+    f:
+        Function to retry if failed.
+
+    Returns
+    -------
+    decorated:
+        Decorated function.
+
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        for _ in range(RETRY):
+            try:
+                result = f(*args, **kwargs)
+                return result
+            except Exception as e:
+                print(e)
+                print("Retrying ...")
+        print(f"Retried {RETRY} times but all failed.")
+    return decorated
+
+
+def save_to_db(db: AnyPath, table: str, *args) -> bool:
     """
     Save data to database.
 
