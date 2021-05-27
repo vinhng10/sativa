@@ -57,7 +57,7 @@ def save_to_db(db: AnyPath, table: str, *args) -> bool:
 
     Returns
     -------
-    None
+    bool
 
     """
     connection = sqlite3.connect(db)
@@ -68,11 +68,14 @@ def save_to_db(db: AnyPath, table: str, *args) -> bool:
         sql = f"INSERT INTO {table} VALUES ({values})"
         cursor.execute(sql)
         connection.commit()
+        connection.close()
+        return True
     except Exception as e:
         print(e)
+        print("Rolling back ...")
         connection.rollback()
-
-    connection.close()
+        connection.close()
+        return False
 
 
 def split_file(file: AnyPath, file_split_size: int = 0, suffix_length: int = 4) -> List[Path]:
