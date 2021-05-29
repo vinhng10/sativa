@@ -39,6 +39,7 @@ def retry(f):
                 print(e)
                 print("Retrying ...")
         print(f"Retried {RETRY} times but all failed.")
+        return result
     return decorated
 
 
