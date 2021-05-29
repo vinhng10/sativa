@@ -17,8 +17,9 @@ CREATE TABLE IF NOT EXISTS Experiment (
     core            INTEGER,
     process         INTEGER,
     transfer_rate   INTEGER,            -- in MB/s
-    transfer_time   INTEGER,            -- in minutes
-    status          TEXT NOT NULL       -- successful or failed
+    start_time      DATETIME,           -- in iso format
+    end_time        DATETIME,           -- in iso format
+    status          TEXT NOT NULL,      -- successful or failed
 
     FOREIGN KEY (file) REFERENCES File(name)
 );
