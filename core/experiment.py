@@ -4,7 +4,8 @@ from utils import (
     AnyPath
 )
 
-class Experiment:
+
+class SubExperiment:
     def __init__(
         self,
         file: AnyPath,
