@@ -43,6 +43,10 @@ def retry(f):
     return decorated
 
 
+def get_network_transfer_rate():
+    return 0
+
+
 def save_to_db(db: AnyPath, table: str, *args) -> bool:
     """
     Save data to database.
@@ -197,29 +201,14 @@ def upload_file_swift(file: AnyPath, auth_version: str, username: str,
         cmd.split(),
         capture_output=True,
         text=True,
-        check=True
+        check=False
     )
     return result
 
 
-@retry
 def upload_file_s3cmd() -> subprocess.CompletedProcess:
     pass
 
 
-@retry
 def upload_file_rclone() -> subprocess.CompletedProcess:
     pass
-
-
-def upload_file(file: AnyPath, tool: str) -> None:
-    """"""
-    if not isinstance(tool, str):
-        raise TypeError(f"Expected type str for tool, but got {type(tool)} instead.")
-
-    if tool == Tool.SWIFT.value:
-        upload_file_swift()
-    elif tool == Tool.S3CMD.value:
-        upload_file_s3cmd()
-    elif tool == Tool.RCLONE.value:
-        upload_file_rclone()
