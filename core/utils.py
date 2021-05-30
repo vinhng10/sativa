@@ -65,6 +65,7 @@ def save_to_db(db: AnyPath, table: str, *args) -> bool:
 
     try:
         cursor = connection.cursor()
+        # TODO: INSECURE !!! Use cursor.execute second parameters instead !!!
         values = ','.join([f'\'{arg}\'' for arg in args])
         sql = f"INSERT INTO {table} VALUES ({values})"
         cursor.execute(sql)
@@ -80,6 +81,7 @@ def save_to_db(db: AnyPath, table: str, *args) -> bool:
 
 
 def split_file(file: AnyPath, file_split_size: int = 0,
+               file_split_chunk: int = 0,
                suffix_length: int = 4) -> List[Path]:
     """
     Split a file into smaller files. All the split files will locate in dedicated
@@ -97,6 +99,8 @@ def split_file(file: AnyPath, file_split_size: int = 0,
         Path to the file to be split.
     file_split_size: int
         Size of a split file. Measured in Gigabyte.
+    file_split_chunk: int
+        Number of split files.
     suffix_length: int
         Length of suffix for split files.
 
@@ -106,12 +110,15 @@ def split_file(file: AnyPath, file_split_size: int = 0,
         List of path to split files.
 
     """
-    if not isinstance(file_split_size, int):
-        raise TypeError(f"Non-negataive integer file_split_size expected, but got {type(file_split_size)} instead.")
-    if not isinstance(suffix_length, int):
-        raise TypeError(f"Positive integer suffix_length expected, but got {type(suffix_length)} instead.")
-    if suffix_length < 0:
-        raise ValueError(f"Positive integer suffix_length expected, but got {suffix_length} instead.")
+    if not isinstance(file_split_size, int) or file_split_size < 0:
+        raise ValueError(f"Non-negataive integer file_split_size expected, "
+                        f"but got {type(file_split_size)} instead.")
+    if not isinstance(file_split_size, int) or file_split_chunk < 0:
+        raise ValueError(f"Non-negataive integer file_split_chunk expected, "
+                        f"but got {type(file_split_chunk)} instead.")
+    if not isinstance(suffix_length, int) or suffix_length <= 0:
+        raise TypeError(f"Positive integer suffix_length expected, but got "
+                        f"{type(suffix_length)} instead.")
 
     file = Path(file)
     prefix = f"{file.name.replace('.', '-')}-{file_split_size}G-"
@@ -120,10 +127,19 @@ def split_file(file: AnyPath, file_split_size: int = 0,
     parent_folder = file.parent / (prefix + "splits")
     parent_folder.mkdir(parents=True, exist_ok=True)
 
+    # Call linux "split" to split the file. This is for convenience and reliability.
+    # Might need check for performance compared to native python code in different settings:
     if file_split_size > 0:
-        # Call linux "split" to split the file. This is for convenience and reliability.
-        # Might need check for performance compared to native python code in different settings:
         cmd = f"split -d -a {suffix_length} -b {file_split_size}GB " \
+              f"{file.as_posix()} {parent_folder / prefix}"
+        p = subprocess.run(
+            cmd.split(),
+            capture_output=True,
+            text=True,
+            check=True
+        )
+    elif file_split_chunk > 0:
+        cmd = f"split -d -a {suffix_length} -n {file_split_chunk} " \
               f"{file.as_posix()} {parent_folder / prefix}"
         p = subprocess.run(
             cmd.split(),
