@@ -7,8 +7,7 @@ bucket: "vinh-dev"
 cluster: "mahti"
 node: "login"
 tool: "swift"
-file_split_sizes: [10, 50, 100]
+file_split_sizes: []
 segment_sizes: [1, 2, 5]
-threads: [10]
-cores: []
-processs: []
+threads: [1]
+cores: [8]

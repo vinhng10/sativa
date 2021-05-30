@@ -38,7 +38,6 @@ class SubExperiment:
         self.segment_size = segment_size
         self.thread = thread
         self.core = core
-        self.process = process
         self.auth = auth
 
     def save_file(self) -> None:
@@ -71,7 +70,7 @@ class SubExperiment:
                 self.file.name, self.version, self.bucket,
                 self.cluster, self.node, self.tool,
                 self.file_split_size, self.segment_size,
-                self.thread, self.core, self.process, transfer_rate,
+                self.thread, self.core, transfer_rate,
                 start_time.isoformat(), end_time.isoformat(),
                 status
             )

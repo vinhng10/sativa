@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS Experiment (
     segment_size    INTEGER,            -- in gigabyte
     thread          INTEGER,
     core            INTEGER,
-    process         INTEGER,
     transfer_rate   INTEGER,            -- in MB/s
     start_time      DATETIME,           -- in iso format
     end_time        DATETIME,           -- in iso format
