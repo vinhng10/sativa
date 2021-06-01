@@ -161,8 +161,9 @@ def split_file(file: AnyPath, file_split_size: int = 0,
               f"{file.as_posix()} {parent_folder / prefix}"
         p = subprocess.run(
             cmd.split(),
-            capture_output=True,
-            text=True,
+            stdout=subprocess.PIPE,
+	    stderr=subprocess.PIPE,
+            universal_newlines=True,
             check=True
         )
     elif file_split_chunk > 0:
@@ -170,8 +171,9 @@ def split_file(file: AnyPath, file_split_size: int = 0,
               f"{file.as_posix()} {parent_folder / prefix}"
         p = subprocess.run(
             cmd.split(),
-            capture_output=True,
-            text=True,
+            stdout=subprocess.PIPE,
+	    stderr=subprocess.PIPE,
+            universal_newlines=True,
             check=True
         )
     else:
@@ -222,8 +224,9 @@ def upload_file_swift(file: AnyPath, auth_version: str, username: str,
           f"{file}"
     result = subprocess.run(
         cmd.split(),
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
         check=True
     )
     return result
