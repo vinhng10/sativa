@@ -3,7 +3,7 @@ import yaml
 from pathlib import Path
 
 from experiment import Experiment
-from utils import get_named_parameters
+from utils import get_parameters_dicts
 
 
 ##############################################################################
@@ -38,19 +38,25 @@ file = Path(args.file)
 ##############################################################################
 
 # Get parameter iterator:
-parameters = get_named_parameters(
-    file_split_size=config.file_split_sizes,
-    segment_size=config.segment_sizes,
-    thread=config.threads,
-    core=config.cores
+parameters = get_parameters_dicts(
+    file_split_size=config["file_split_sizes"],
+    segment_size=config["segment_sizes"],
+    thread=config["threads"],
+    core=config["cores"]
 )
 
 # Run experiment on each parameter setting:
 for parameter in parameters:
+    print(f"Run experiment with {parameter} ... ")
+
     experiment = Experiment(
-        config.db, file, config.version, config.bucket,
-        config.cluster, config.node, config.tool,
-        parameter.file_split_size, parameter.segment_size,
-        parameter.thread, parameter.cores, auth
+        config["db"], file, config["version"], config["bucket"],
+        config["cluster"], config["node"], config["tool"],
+        parameter["file_split_size"], parameter["segment_size"],
+        parameter["thread"], parameter["core"], auth
     )
-    experiment.run()
+
+    results = experiment.run()
+
+    print(results)
+    print("Finished experiment.\n")

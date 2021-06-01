@@ -34,7 +34,7 @@ class BaseExperiment(ABC):
     def record_file(self) -> None:
         save_to_db(
             self.db, "File",
-            self.file.name, self.file.suffix, self.file.stat().st_size
+            self.file.name, self.file.suffix, str(self.file.stat().st_size)
         )
 
     def _record_result(f):
@@ -100,8 +100,14 @@ class SubExperiment(BaseExperiment):
                 self.segment_size,
                 self.thread
             )
+            print("###########################")
+            print(result.stdout)
+            print("###########################")
+            print(result.stderr)
+
         elif self.tool == Tool.S3CMD.value:
             result = upload_file_s3cmd()
+
         elif self.tool == Tool.RCLONE.value:
             result = upload_file_rclone()
 
@@ -124,6 +130,7 @@ class Experiment(BaseExperiment):
             self.thread, 1, self.auth
         )
         result = sub_experiment.run()
+        print(result)
         return result
 
     def run(self) -> List[subprocess.CompletedProcess]:
@@ -139,7 +146,7 @@ class Experiment(BaseExperiment):
 
         # Spawn a pool of workers to process transfer:
         with Pool(self.cores) as pool:
-            results = pool.map_async(self.run_sub_experiment, split_files)
+            results = pool.map(self.run_sub_experiment, split_files)
 
         return results
 

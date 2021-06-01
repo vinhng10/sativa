@@ -1,11 +1,10 @@
 import sqlite3
 import subprocess
-from collections import namedtuple
 from enum import Enum
 from functools import wraps
 from itertools import product
 from pathlib import Path
-from typing import List, Union
+from typing import List, Dict, Union
 
 AnyPath = Union[Path, str, bytes]
 RETRY = 3
@@ -50,9 +49,9 @@ def get_network_transfer_rate():
     return 0
 
 
-def get_named_parameters(**kwargs) -> List[namedtuple]:
+def get_parameters_dicts(**kwargs) -> List[Dict]:
     """
-    Get a list of named parameters.
+    Get a list of parameters dictionaries.
 
     Parameters
     ----------
@@ -61,11 +60,13 @@ def get_named_parameters(**kwargs) -> List[namedtuple]:
     Returns
     -------
     parameters: List[namedtuple]
-        List of named parameters.
+        List of parameters dictionaries.
 
     """
-    Parameter = namedtuple("Parameter", kwargs.keys())
-    parameters = [Parameter(*param) for param in product(*kwargs.values())]
+    parameters = [
+        dict(zip(kwargs.keys(), param))
+        for param in product(*kwargs.values())
+    ]
     return parameters
 
 
@@ -223,7 +224,7 @@ def upload_file_swift(file: AnyPath, auth_version: str, username: str,
         cmd.split(),
         capture_output=True,
         text=True,
-        check=False
+        check=True
     )
     return result
 
