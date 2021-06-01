@@ -152,7 +152,7 @@ def split_file(file: AnyPath, file_split_size: int = 0,
 
     # Create directory to store split files. This is for easy management:
     parent_folder = file.parent / (prefix + "splits")
-    if parent_folder.exists():
+    if not parent_folder.exists():
         parent_folder.mkdir(parents=True, exist_ok=True)
 
         # Call linux "split" to split the file. This is for convenience and reliability.
