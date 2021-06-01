@@ -50,7 +50,7 @@ def get_network_transfer_rate():
     return 0
 
 
-def get_named_parameters(**kwargs) -> List:
+def get_named_parameters(**kwargs) -> List[namedtuple]:
     """
     Get a list of named parameters.
 
@@ -60,7 +60,7 @@ def get_named_parameters(**kwargs) -> List:
 
     Returns
     -------
-    parameters: List
+    parameters: List[namedtuple]
         List of named parameters.
 
     """
