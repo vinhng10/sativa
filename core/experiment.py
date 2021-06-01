@@ -9,6 +9,7 @@ from typing import List
 from utils import (
     AnyPath, Tool, save_to_db,
     upload_file_swift, upload_file_s3cmd, upload_file_rclone,
+    delete_bucket_swift, 
     split_file, get_network_transfer_rate
 )
 
@@ -36,6 +37,31 @@ class BaseExperiment(ABC):
             self.db, "File",
             self.file.name, self.file.suffix, str(self.file.stat().st_size)
         )
+
+    def delete_bucket(self) -> None:
+        if self.tool == Tool.SWIFT.value:
+            delete_bucket_swift(
+                self.auth["st_auth_version"],
+                self.auth["os_username"],
+                self.auth["os_password"],
+                self.auth["os_project_name"],
+                self.auth["os_auth_url"],
+                self.bucket
+	    )
+            delete_bucket_swift(
+                self.auth["st_auth_version"],
+                self.auth["os_username"],
+                self.auth["os_password"],
+                self.auth["os_project_name"],
+                self.auth["os_auth_url"],
+                self.bucket+"_segments"
+	    )
+
+        elif self.tool == Tool.S3CMD.value:
+            delete_bucket_s3cmd()
+
+        elif self.tool == Tool.RCLONE.value:
+            delete_bucket_rclone()
 
     def _record_result(f):
         """"""
@@ -100,10 +126,6 @@ class SubExperiment(BaseExperiment):
                 self.segment_size,
                 self.thread
             )
-            print("###########################")
-            print(result.stdout)
-            print("###########################")
-            print(result.stderr)
 
         elif self.tool == Tool.S3CMD.value:
             result = upload_file_s3cmd()
@@ -130,7 +152,6 @@ class Experiment(BaseExperiment):
             self.thread, 1, self.auth
         )
         result = sub_experiment.run()
-        print(result)
         return result
 
     def run(self) -> List[subprocess.CompletedProcess]:

@@ -193,9 +193,6 @@ def upload_file_swift(file: AnyPath, auth_version: str, username: str,
     """
     Upload file to cloud storage using Swift.
 
-    Authentication information is in .env file. Please load it
-    to environment variables prior to using this function.
-
     Parameters
     ----------
     file: AnyPath
@@ -222,6 +219,39 @@ def upload_file_swift(file: AnyPath, auth_version: str, username: str,
           f"--segment-threads {segment_thread} " \
           f"{bucket} " \
           f"{file}"
+    result = subprocess.run(
+        cmd.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        check=True
+    )
+    return result
+
+
+def delete_bucket_swift(auth_version: str, username: str,
+                        password: str, project: str, auth_url: str,
+                        bucket: str) -> subprocess.CompletedProcess:
+    """
+    Delete bucket in cloud using Swift.
+
+    Parameters
+    ----------
+    bucket: str
+        Bucket name.
+
+    Returns
+    -------
+    result: subprocess.CompletedProcess
+
+    """
+    cmd = f"swift delete " \
+          f"--os-auth-url {auth_url} " \
+          f"--auth-version {auth_version} " \
+          f"--os-project-name {project} " \
+          f"--os-username {username} " \
+          f"--os-password {password} " \
+          f"{bucket}"
     result = subprocess.run(
         cmd.split(),
         stdout=subprocess.PIPE,

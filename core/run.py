@@ -58,5 +58,6 @@ for parameter in parameters:
 
     results = experiment.run()
 
-    print(results)
+    experiment.delete_bucket()
+
     print("Finished experiment.\n")
