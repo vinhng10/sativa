@@ -72,11 +72,18 @@ class BaseExperiment(ABC):
             end_time = datetime.now()
 
             # Check the status of the function:
-            if result.returncode == 0:
-                status = "SUCCESSFUL"
+            if isinstance(result, list):
+                if all([res.returnode == 0 for res in result]):
+                    status = "SUCCESSFUL"
+                else:
+                    print(result.stderr)
+                    status = "FAILED"
             else:
-                print(result.stderr)
-                status = "FAILED"
+                if result.returncode == 0:
+                    status = "SUCCESSFUL"
+                else:
+                    print(result.stderr)
+                    status = "FAILED"
 
             # Get network transfer rate:
             transfer_rate = get_network_transfer_rate()
