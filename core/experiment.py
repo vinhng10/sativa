@@ -139,7 +139,7 @@ class Experiment(BaseExperiment):
 
         # Spawn a pool of workers to process transfer:
         with Pool(self.cores) as pool:
-            results = pool.map(self.run_sub_experiment, split_files)
+            results = pool.map_async(self.run_sub_experiment, split_files)
 
         return results
 
