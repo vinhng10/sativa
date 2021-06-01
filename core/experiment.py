@@ -95,7 +95,6 @@ class BaseExperiment(ABC):
         return decorated
 
     @abstractmethod
-    @_record_result
     def run(self) -> None:
         ...
 
@@ -109,6 +108,7 @@ class SubExperiment(BaseExperiment):
                          node, tool, file_split_size, segment_size,
                          thread, cores, auth)
 
+    @BaseExperiment._record_result
     def run(self) -> subprocess.CompletedProcess:
         # Record file information to the database:
         self.record_file()
@@ -154,6 +154,7 @@ class Experiment(BaseExperiment):
         result = sub_experiment.run()
         return result
 
+    @BaseExperiment._record_result
     def run(self) -> List[subprocess.CompletedProcess]:
         # Record file information to the database:
         self.record_file()
