@@ -1,5 +1,5 @@
 import argparse
-import yaml
+import json
 from pathlib import Path
 
 from experiment import Experiment
@@ -24,11 +24,11 @@ args = parser.parse_args()
 
 # Read authentication file:
 with open(args.auth, "r") as f:
-    auth = yaml.load(f, Loader=yaml.FullLoader)
+    auth = json.load(f)
 
 # Read experiment config file:
 with open(args.cfg, "r") as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
+    config = json.load(f)
 
 # Get file path:
 file = Path(args.file)
@@ -47,7 +47,7 @@ parameters = get_parameters_dicts(
 
 # Run experiment on each parameter setting:
 for parameter in parameters:
-    print(f"Run experiment with {parameter} ... ")
+    print(f"Run experiment with {parameter} ...")
 
     experiment = Experiment(
         config["db"], file, config["version"], config["bucket"],

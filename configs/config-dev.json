@@ -1,0 +1,15 @@
+{
+    # Database
+    "db": "./db/dev.db",
+
+    # Experiment
+    "version": "0.0.0",
+    "bucket": "vinh-dev",
+    "cluster": "mahti",
+    "node": "login",
+    "tool": "swift",
+    "file_split_sizes": [0],
+    "segment_sizes": [1, 2, 5],
+    "threads": [1],
+    "cores": [4]
+}
