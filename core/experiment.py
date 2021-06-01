@@ -73,7 +73,7 @@ class BaseExperiment(ABC):
 
             # Check the status of the function:
             if isinstance(result, list):
-                if all([res.returnode == 0 for res in result]):
+                if all([res.returncode == 0 for res in result]):
                     status = "SUCCESSFUL"
                 else:
                     print(result.stderr)
