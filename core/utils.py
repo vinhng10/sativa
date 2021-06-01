@@ -152,33 +152,34 @@ def split_file(file: AnyPath, file_split_size: int = 0,
 
     # Create directory to store split files. This is for easy management:
     parent_folder = file.parent / (prefix + "splits")
-    parent_folder.mkdir(parents=True, exist_ok=True)
+    if parent_folder.exists():
+        parent_folder.mkdir(parents=True, exist_ok=True)
 
-    # Call linux "split" to split the file. This is for convenience and reliability.
-    # Might need check for performance compared to native python code in different settings:
-    if file_split_size > 0:
-        cmd = f"split -d -a {suffix_length} -b {file_split_size}GB " \
-              f"{file.as_posix()} {parent_folder / prefix}"
-        p = subprocess.run(
-            cmd.split(),
-            stdout=subprocess.PIPE,
-	    stderr=subprocess.PIPE,
-            universal_newlines=True,
-            check=True
-        )
-    elif file_split_chunk > 0:
-        cmd = f"split -d -a {suffix_length} -n {file_split_chunk} " \
-              f"{file.as_posix()} {parent_folder / prefix}"
-        p = subprocess.run(
-            cmd.split(),
-            stdout=subprocess.PIPE,
-	    stderr=subprocess.PIPE,
-            universal_newlines=True,
-            check=True
-        )
-    else:
-        # If file_split_size is 0, then don't split the file, only move to new directory:
-        file.rename(parent_folder / (prefix + "0"*suffix_length))
+        # Call linux "split" to split the file. This is for convenience and reliability.
+        # Might need check for performance compared to native python code in different settings:
+        if file_split_size > 0:
+            cmd = f"split -d -a {suffix_length} -b {file_split_size}GB " \
+                  f"{file.as_posix()} {parent_folder / prefix}"
+            p = subprocess.run(
+                cmd.split(),
+                stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+                universal_newlines=True,
+                check=True
+            )
+        elif file_split_chunk > 0:
+            cmd = f"split -d -a {suffix_length} -n {file_split_chunk} " \
+                  f"{file.as_posix()} {parent_folder / prefix}"
+            p = subprocess.run(
+                cmd.split(),
+                stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+                universal_newlines=True,
+                check=True
+            )
+        else:
+            # If file_split_size is 0, then don't split the file, only move to new directory:
+            file.rename(parent_folder / (prefix + "0"*suffix_length))
 
     # Glob all paths to split files:
     split_files = list(parent_folder.glob(f"*{prefix}*"))
