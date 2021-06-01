@@ -1,7 +1,9 @@
 import sqlite3
 import subprocess
+from collections import namedtuple
 from enum import Enum
 from functools import wraps
+from itertools import product
 from pathlib import Path
 from typing import List, Union
 
@@ -43,8 +45,28 @@ def retry(f):
     return decorated
 
 
+# TODO: Implement function to extract transfer rate.
 def get_network_transfer_rate():
     return 0
+
+
+def get_named_parameters(**kwargs) -> List:
+    """
+    Get a list of named parameters.
+
+    Parameters
+    ----------
+    kwargs:
+
+    Returns
+    -------
+    parameters: List
+        List of named parameters.
+
+    """
+    Parameter = namedtuple("Parameter", kwargs.keys())
+    parameters = [Parameter(*param) for param in product(*kwargs.values())]
+    return parameters
 
 
 def save_to_db(db: AnyPath, table: str, *args) -> bool:
