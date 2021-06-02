@@ -47,7 +47,7 @@ class BaseExperiment(ABC):
                 self.auth["os_project_name"],
                 self.auth["os_auth_url"],
                 self.bucket
-	    )
+            )
             delete_bucket_swift(
                 self.auth["st_auth_version"],
                 self.auth["os_username"],
@@ -55,7 +55,7 @@ class BaseExperiment(ABC):
                 self.auth["os_project_name"],
                 self.auth["os_auth_url"],
                 self.bucket+"_segments"
-	    )
+            )
 
         elif self.tool == Tool.S3CMD.value:
             delete_bucket_s3cmd()
