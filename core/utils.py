@@ -1,0 +1,270 @@
+import sqlite3
+import subprocess
+from enum import Enum
+from functools import wraps
+from itertools import product
+from pathlib import Path
+from typing import List, Dict, Union
+
+AnyPath = Union[Path, str, bytes]
+RETRY = 3
+
+class Tool(Enum):
+    SWIFT = "swift"
+    S3CMD = "s3cmd"
+    RCLONE = "rclone"
+
+
+def retry(f):
+    """
+    Retry a function for a fixed amount of time if failed.
+
+    Parameters
+    ----------
+    f:
+        Function to retry if failed.
+
+    Returns
+    -------
+    decorated:
+        Decorated function.
+
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        for _ in range(RETRY):
+            try:
+                result = f(*args, **kwargs)
+                return result
+            except Exception as e:
+                print(e)
+                print("Retrying ...")
+        print(f"Retried {RETRY} times but all failed.")
+        return result
+    return decorated
+
+
+# TODO: Implement function to extract transfer rate.
+def get_network_transfer_rate():
+    return 0
+
+
+def get_parameters_dicts(**kwargs) -> List[Dict]:
+    """
+    Get a list of parameters dictionaries.
+
+    Parameters
+    ----------
+    kwargs:
+
+    Returns
+    -------
+    parameters: List[namedtuple]
+        List of parameters dictionaries.
+
+    """
+    parameters = [
+        dict(zip(kwargs.keys(), param))
+        for param in product(*kwargs.values())
+    ]
+    return parameters
+
+
+def save_to_db(db: AnyPath, table: str, *args) -> bool:
+    """
+    Save data to database.
+
+    Parameters
+    ----------
+    db: AnyPath
+        Path to sqlite database.
+    table: str
+        Name of table to save data to.
+    args:
+        Positional arguments.
+
+    Returns
+    -------
+    bool
+
+    """
+    connection = sqlite3.connect(db)
+
+    try:
+        cursor = connection.cursor()
+        # TODO: INSECURE !!! Use cursor.execute second parameters instead !!!
+        values = ','.join([f'\'{arg}\'' for arg in args])
+        sql = f"INSERT INTO {table} VALUES ({values})"
+        cursor.execute(sql)
+        connection.commit()
+        connection.close()
+        return True
+    except Exception as e:
+        print(e)
+        print("Rolling back ...")
+        connection.rollback()
+        connection.close()
+        return False
+
+
+def split_file(file: AnyPath, file_split_size: int = 0,
+               file_split_chunk: int = 0,
+               suffix_length: int = 4) -> List[Path]:
+    """
+    Split a file into smaller files. All the split files will locate in dedicated
+    folder to separate from other splits (from other experiments).
+
+    The name format of dedicated folder:
+        <file_name>-<file_extension>-<file_split_size>G-splits
+
+    The name format of split file:
+        <file_name>-<file_extension>-<file_split_size>G-<number>
+
+    Parameters
+    ----------
+    file: AnyPath
+        Path to the file to be split.
+    file_split_size: int
+        Size of a split file. Measured in Gigabyte.
+    file_split_chunk: int
+        Number of split files.
+    suffix_length: int
+        Length of suffix for split files.
+
+    Returns
+    -------
+    split_files: List[Path]
+        List of path to split files.
+
+    """
+    if not isinstance(file_split_size, int) or file_split_size < 0:
+        raise ValueError(f"Non-negataive integer file_split_size expected, "
+                        f"but got {type(file_split_size)} instead.")
+    if not isinstance(file_split_size, int) or file_split_chunk < 0:
+        raise ValueError(f"Non-negataive integer file_split_chunk expected, "
+                        f"but got {type(file_split_chunk)} instead.")
+    if not isinstance(suffix_length, int) or suffix_length <= 0:
+        raise TypeError(f"Positive integer suffix_length expected, but got "
+                        f"{type(suffix_length)} instead.")
+
+    file = Path(file)
+    prefix = f"{file.name.replace('.', '-')}-{file_split_size}G-"
+
+    # Create directory to store split files. This is for easy management:
+    parent_folder = file.parent / (prefix + "splits")
+    parent_folder.mkdir(parents=True, exist_ok=True)
+
+    # Call linux "split" to split the file. This is for convenience and reliability.
+    # Might need check for performance compared to native python code in different settings:
+    if file_split_size > 0:
+        cmd = f"split -d -a {suffix_length} -b {file_split_size}GB " \
+              f"{file.as_posix()} {parent_folder / prefix}"
+        p = subprocess.run(
+            cmd.split(),
+            stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+            universal_newlines=True,
+            check=True
+        )
+    elif file_split_chunk > 0:
+        cmd = f"split -d -a {suffix_length} -n {file_split_chunk} " \
+              f"{file.as_posix()} {parent_folder / prefix}"
+        p = subprocess.run(
+            cmd.split(),
+            stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+            universal_newlines=True,
+            check=True
+        )
+    else:
+        # If file_split_size is 0, then don't split the file, only move to new directory:
+        file.rename(parent_folder / (prefix + "0"*suffix_length))
+
+    # Glob all paths to split files:
+    split_files = list(parent_folder.glob(f"*{prefix}*"))
+
+    return split_files
+
+
+def upload_file_swift(file: AnyPath, auth_version: str, username: str,
+                      password: str, project: str, auth_url: str,
+                      bucket: str, segment_size: int,
+                      segment_thread: int) -> subprocess.CompletedProcess:
+    """
+    Upload file to cloud storage using Swift.
+
+    Parameters
+    ----------
+    file: AnyPath
+        Path to the file to be upload.
+    bucket: str
+        Bucket name.
+    segment_size: int
+        Size of a file segment (in Gigabyte).
+    segment_thread: int
+        Number of threads to upload segments.
+
+    Returns
+    -------
+    result: subprocess.CompletedProcess
+
+    """
+    cmd = f"swift upload " \
+          f"--os-auth-url {auth_url} " \
+          f"--auth-version {auth_version} " \
+          f"--os-project-name {project} " \
+          f"--os-username {username} " \
+          f"--os-password {password} " \
+          f"--use-slo --segment-size {segment_size}G " \
+          f"--segment-threads {segment_thread} " \
+          f"{bucket} " \
+          f"{file}"
+    result = subprocess.run(
+        cmd.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        check=True
+    )
+    return result
+
+
+def delete_bucket_swift(auth_version: str, username: str,
+                        password: str, project: str, auth_url: str,
+                        bucket: str) -> subprocess.CompletedProcess:
+    """
+    Delete bucket in cloud using Swift.
+
+    Parameters
+    ----------
+    bucket: str
+        Bucket name.
+
+    Returns
+    -------
+    result: subprocess.CompletedProcess
+
+    """
+    cmd = f"swift delete " \
+          f"--os-auth-url {auth_url} " \
+          f"--auth-version {auth_version} " \
+          f"--os-project-name {project} " \
+          f"--os-username {username} " \
+          f"--os-password {password} " \
+          f"{bucket}"
+    result = subprocess.run(
+        cmd.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        check=True
+    )
+    return result
+
+
+def upload_file_s3cmd() -> subprocess.CompletedProcess:
+    pass
+
+
+def upload_file_rclone() -> subprocess.CompletedProcess:
+    pass
