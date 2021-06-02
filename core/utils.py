@@ -162,9 +162,9 @@ def split_file(file: AnyPath, file_split_size: int = 0,
         p = subprocess.run(
             cmd.split(),
             stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             universal_newlines=True,
-            check=True
+            check=False
         )
     elif file_split_chunk > 0:
         cmd = f"split -d -a {suffix_length} -n {file_split_chunk} " \
@@ -172,9 +172,9 @@ def split_file(file: AnyPath, file_split_size: int = 0,
         p = subprocess.run(
             cmd.split(),
             stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             universal_newlines=True,
-            check=True
+            check=False
         )
     else:
         # If file_split_size is 0, then don't split the file, only move to new directory:
@@ -224,7 +224,7 @@ def upload_file_swift(file: AnyPath, auth_version: str, username: str,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True,
-        check=True
+        check=False
     )
     return result
 
@@ -257,7 +257,7 @@ def delete_bucket_swift(auth_version: str, username: str,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True,
-        check=True
+        check=False
     )
     return result
 
