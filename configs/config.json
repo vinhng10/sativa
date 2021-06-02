@@ -1,0 +1,12 @@
+{
+    "db": "./db/prod.db",
+    "version": "0.0.0",
+    "bucket": "vinh",
+    "cluster": "mahti",
+    "node": "interactive",
+    "tool": "swift",
+    "file_split_sizes": [0],
+    "segment_sizes": [1, 2, 5],
+    "threads": [1],
+    "cores": [8]
+}
