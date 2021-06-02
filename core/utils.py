@@ -262,10 +262,8 @@ def delete_bucket_swift(auth_version: str, username: str,
     return result
 
 
-def upload_file_s3cmd(file: AnyPath, auth_version: str, username: str,
-                      password: str, project: str, auth_url: str,
-                      bucket: str, segment_size: int,
-                      segment_thread: int) -> subprocess.CompletedProcess:
+def upload_file_s3cmd(file: AnyPath, bucket: str,
+                      segment_size: int) -> subprocess.CompletedProcess:
     """
     Upload file to cloud storage using s3cmd.
 
