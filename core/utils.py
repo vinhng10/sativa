@@ -262,8 +262,73 @@ def delete_bucket_swift(auth_version: str, username: str,
     return result
 
 
-def upload_file_s3cmd() -> subprocess.CompletedProcess:
-    pass
+def upload_file_s3cmd(file: AnyPath, auth_version: str, username: str,
+                      password: str, project: str, auth_url: str,
+                      bucket: str, segment_size: int,
+                      segment_thread: int) -> subprocess.CompletedProcess:
+    """
+    Upload file to cloud storage using s3cmd.
+
+    Parameters
+    ----------
+    file: AnyPath
+        Path to the file to be upload.
+    bucket: str
+        Bucket name.
+    segment_size: int
+        Size of a file segment (in Gigabyte).
+
+    Returns
+    -------
+    result: subprocess.CompletedProcess
+
+    """
+    cmd = f"s3cmd mb s3://{bucket}"
+    result = subprocess.run(
+        cmd.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        check=False
+    )
+
+    cmd = f"s3cmd put " \
+          f"--multipart-chunk-size-mb {segment_size}000 " \
+          f"{file} " \
+          f"s3://{bucket}"
+    result = subprocess.run(
+        cmd.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        check=False
+    )
+    return result
+
+
+def delete_bucket_s3cmd(bucket: str) -> subprocess.CompletedProcess:
+    """
+    Delete bucket in cloud using s3cmd.
+
+    Parameters
+    ----------
+    bucket: str
+        Bucket name.
+
+    Returns
+    -------
+    result: subprocess.CompletedProcess
+
+    """
+    cmd = f"s3cmd rb --recursive s3://{bucket}"
+    result = subprocess.run(
+        cmd.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        check=False
+    )
+    return result
 
 
 def upload_file_rclone() -> subprocess.CompletedProcess:
