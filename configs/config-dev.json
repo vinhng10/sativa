@@ -1,6 +1,6 @@
 {
     "db": "./db/dev.db",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "bucket": "vinh-dev",
     "cluster": "mahti",
     "node": "interactive",
@@ -8,5 +8,5 @@
     "file_split_sizes": [0],
     "segment_sizes": [1, 2, 5],
     "threads": [1],
-    "cores": [4]
+    "cores": [8]
 }
