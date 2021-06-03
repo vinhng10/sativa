@@ -76,7 +76,7 @@ class BaseExperiment(ABC):
                 if all([res.returncode == 0 for res in result]):
                     status = "SUCCESSFUL"
                 else:
-                    print(result.stderr)
+                    print(res.stderr for res in result)
                     status = "FAILED"
             else:
                 if result.returncode == 0:
