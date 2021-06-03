@@ -9,7 +9,7 @@ from typing import List
 from utils import (
     AnyPath, Tool, save_to_db,
     upload_file_swift, upload_file_s3cmd, upload_file_rclone,
-    delete_bucket_swift, delete_bucket_s3cmd,
+    delete_bucket_swift, delete_bucket_s3cmd, delete_bucket_rclone,
     split_file, get_network_transfer_rate
 )
 
@@ -18,7 +18,7 @@ class BaseExperiment(ABC):
     def __init__(self, db: str, file: AnyPath, version: str,
                  bucket: str, cluster: str, node: str, tool: str,
                  file_split_size: int, segment_size: int,
-                 thread: int, cores: int, auth: dict):
+                 thread: int, cores: int):
         self.db = db
         self.file = Path(file)
         self.version = version
@@ -30,7 +30,6 @@ class BaseExperiment(ABC):
         self.segment_size = segment_size
         self.thread = thread
         self.cores = cores
-        self.auth = auth
 
     def record_file(self) -> None:
         save_to_db(
@@ -40,28 +39,14 @@ class BaseExperiment(ABC):
 
     def delete_bucket(self) -> None:
         if self.tool == Tool.SWIFT.value:
-            delete_bucket_swift(
-                self.auth["st_auth_version"],
-                self.auth["os_username"],
-                self.auth["os_password"],
-                self.auth["os_project_name"],
-                self.auth["os_auth_url"],
-                self.bucket
-            )
-            delete_bucket_swift(
-                self.auth["st_auth_version"],
-                self.auth["os_username"],
-                self.auth["os_password"],
-                self.auth["os_project_name"],
-                self.auth["os_auth_url"],
-                self.bucket+"_segments"
-            )
+            delete_bucket_swift(self.bucket)
+            delete_bucket_swift(self.bucket+"_segments")
 
         elif self.tool == Tool.S3CMD.value:
             delete_bucket_s3cmd(self.bucket)
 
         elif self.tool == Tool.RCLONE.value:
-            delete_bucket_rclone()
+            delete_bucket_rclone(self.bucket)
 
     def _record_result(f):
         """"""
@@ -110,10 +95,10 @@ class SubExperiment(BaseExperiment):
     def __init__(self, db: str, file: AnyPath, version: str,
                  bucket: str, cluster: str, node: str, tool: str,
                  file_split_size: int, segment_size: int,
-                 thread: int, cores: int, auth: dict) -> None:
+                 thread: int, cores: int) -> None:
         super().__init__(db, file, version, bucket, cluster,
                          node, tool, file_split_size, segment_size,
-                         thread, cores, auth)
+                         thread, cores)
 
     @BaseExperiment._record_result
     def run(self) -> subprocess.CompletedProcess:
@@ -124,11 +109,6 @@ class SubExperiment(BaseExperiment):
         if self.tool == Tool.SWIFT.value:
             result = upload_file_swift(
                 self.file,
-                self.auth["st_auth_version"],
-                self.auth["os_username"],
-                self.auth["os_password"],
-                self.auth["os_project_name"],
-                self.auth["os_auth_url"],
                 self.bucket,
                 self.segment_size,
                 self.thread
@@ -142,7 +122,12 @@ class SubExperiment(BaseExperiment):
             )
 
         elif self.tool == Tool.RCLONE.value:
-            result = upload_file_rclone()
+            result = upload_file_rclone(
+                self.file,
+                self.bucket,
+                self.segment_size,
+                self.thread
+            )
 
         return result
 
@@ -151,16 +136,16 @@ class Experiment(BaseExperiment):
     def __init__(self, db: str, file: AnyPath, version: str,
                  bucket: str, cluster: str, node: str, tool: str,
                  file_split_size: int, segment_size: int,
-                 thread: int, cores: int, auth: dict) -> None:
+                 thread: int, cores: int) -> None:
         super().__init__(db, file, version, bucket, cluster,
                          node, tool, file_split_size, segment_size,
-                         thread, cores, auth)
+                         thread, cores)
 
     def run_sub_experiment(self, file: Path) -> subprocess.CompletedProcess:
         sub_experiment = SubExperiment(
             self.db, file, self.version, self.bucket, self.cluster,
             self.node, self.tool, self.file_split_size, self.segment_size,
-            self.thread, 1, self.auth
+            self.thread, 1
         )
         result = sub_experiment.run()
         return result
