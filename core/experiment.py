@@ -9,7 +9,7 @@ from typing import List
 from utils import (
     AnyPath, Tool, save_to_db,
     upload_file_swift, upload_file_s3cmd, upload_file_rclone,
-    delete_bucket_swift, 
+    delete_bucket_swift, delete_bucket_s3cmd,
     split_file, get_network_transfer_rate
 )
 
@@ -58,7 +58,7 @@ class BaseExperiment(ABC):
             )
 
         elif self.tool == Tool.S3CMD.value:
-            delete_bucket_s3cmd()
+            delete_bucket_s3cmd(self.bucket)
 
         elif self.tool == Tool.RCLONE.value:
             delete_bucket_rclone()
@@ -76,7 +76,7 @@ class BaseExperiment(ABC):
                 if all([res.returncode == 0 for res in result]):
                     status = "SUCCESSFUL"
                 else:
-                    print(result.stderr)
+                    print(res.stderr for res in result)
                     status = "FAILED"
             else:
                 if result.returncode == 0:
@@ -135,7 +135,11 @@ class SubExperiment(BaseExperiment):
             )
 
         elif self.tool == Tool.S3CMD.value:
-            result = upload_file_s3cmd()
+            result = upload_file_s3cmd(
+                self.file,
+                self.bucket,
+                self.segment_size
+            )
 
         elif self.tool == Tool.RCLONE.value:
             result = upload_file_rclone()
