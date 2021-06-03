@@ -15,16 +15,10 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("-f", "--file", required=True,
                     help="Path to the file to be transfered.")
-parser.add_argument("-a", "--auth", required=True,
-                    help="Path to the authentication file.")
 parser.add_argument("-c", "--cfg", required=True,
                     help="Path to the experiment config file.")
 
 args = parser.parse_args()
-
-# Read authentication file:
-with open(args.auth, "r") as f:
-    auth = json.load(f)
 
 # Read experiment config file:
 with open(args.cfg, "r") as f:
@@ -53,7 +47,7 @@ for parameter in parameters:
         config["db"], file, config["version"], config["bucket"],
         config["cluster"], config["node"], config["tool"],
         parameter["file_split_size"], parameter["segment_size"],
-        parameter["thread"], parameter["core"], auth
+        parameter["thread"], parameter["core"]
     )
 
     results = experiment.run()
