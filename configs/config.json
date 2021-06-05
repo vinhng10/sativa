@@ -1,10 +1,10 @@
 {
     "db": "./db/prod.db",
     "version": "0.0.0",
-    "bucket": "s3cmd",
+    "bucket": "swift",
     "cluster": "mahti",
     "node": "interactive",
-    "tool": "s3cmd",
+    "tool": "swift",
     "file_split_sizes": [0],
     "segment_sizes": [5],
     "threads": [1],
