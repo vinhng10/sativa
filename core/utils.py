@@ -186,9 +186,7 @@ def split_file(file: AnyPath, file_split_size: int = 0,
     return split_files
 
 
-def upload_file_swift(file: AnyPath, auth_version: str, username: str,
-                      password: str, project: str, auth_url: str,
-                      bucket: str, segment_size: int,
+def upload_file_swift(file: AnyPath, bucket: str, segment_size: int,
                       segment_thread: int) -> subprocess.CompletedProcess:
     """
     Upload file to cloud storage using Swift.
@@ -210,12 +208,8 @@ def upload_file_swift(file: AnyPath, auth_version: str, username: str,
 
     """
     cmd = f"swift upload " \
-          f"--os-auth-url {auth_url} " \
-          f"--auth-version {auth_version} " \
-          f"--os-project-name {project} " \
-          f"--os-username {username} " \
-          f"--os-password {password} " \
-          f"--use-slo --segment-size {segment_size}G " \
+          f"--use-slo " \
+          f"--segment-size {segment_size}G " \
           f"--segment-threads {segment_thread} " \
           f"{bucket} " \
           f"{file}"
@@ -229,9 +223,7 @@ def upload_file_swift(file: AnyPath, auth_version: str, username: str,
     return result
 
 
-def delete_bucket_swift(auth_version: str, username: str,
-                        password: str, project: str, auth_url: str,
-                        bucket: str) -> subprocess.CompletedProcess:
+def delete_bucket_swift(bucket: str) -> subprocess.CompletedProcess:
     """
     Delete bucket in cloud using Swift.
 
@@ -245,13 +237,7 @@ def delete_bucket_swift(auth_version: str, username: str,
     result: subprocess.CompletedProcess
 
     """
-    cmd = f"swift delete " \
-          f"--os-auth-url {auth_url} " \
-          f"--auth-version {auth_version} " \
-          f"--os-project-name {project} " \
-          f"--os-username {username} " \
-          f"--os-password {password} " \
-          f"{bucket}"
+    cmd = f"swift delete {bucket}"
     result = subprocess.run(
         cmd.split(),
         stdout=subprocess.PIPE,
@@ -274,7 +260,7 @@ def upload_file_s3cmd(file: AnyPath, bucket: str,
     bucket: str
         Bucket name.
     segment_size: int
-        Size of a file segment (in Gigabyte).
+        Size of a file segment (in Megabyte).
 
     Returns
     -------
@@ -329,5 +315,60 @@ def delete_bucket_s3cmd(bucket: str) -> subprocess.CompletedProcess:
     return result
 
 
-def upload_file_rclone() -> subprocess.CompletedProcess:
-    pass
+def upload_file_rclone(file: AnyPath, bucket: str, segment_size: int,
+                       segment_thread: int) -> subprocess.CompletedProcess:
+    """
+    Upload file to cloud storage using rclone.
+
+    Parameters
+    ----------
+    file: AnyPath
+        Path to the file to be upload.
+    bucket: str
+        Bucket name.
+    segment_size: int
+        Size of a file segment (in Megabyte).
+
+    Returns
+    -------
+    result: subprocess.CompletedProcess
+
+    """
+    cmd = f"rclone copy " \
+          f"--multi-thread-cutoff {segment_size}000 " \
+          f"--multi-thread-streams {segment_thread} " \
+          f"{file} " \
+          f"allas:{bucket}"
+    result = subprocess.run(
+        cmd.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        check=False
+    )
+    return result
+
+
+def delete_bucket_rclone(bucket: str) -> subprocess.CompletedProcess:
+    """
+    Delete bucket in cloud using rclone.
+
+    Parameters
+    ----------
+    bucket: str
+        Bucket name.
+
+    Returns
+    -------
+    result: subprocess.CompletedProcess
+
+    """
+    cmd = f"rclone purge allas:{bucket}"
+    result = subprocess.run(
+        cmd.split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        check=False
+    )
+    return result
