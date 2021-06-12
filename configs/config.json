@@ -1,12 +1,12 @@
 {
     "db": "./db/prod.db",
     "version": "0.0.0",
-    "bucket": "swift",
+    "bucket": "experiements",
     "cluster": "mahti",
     "node": "interactive",
     "tool": "swift",
-    "file_split_sizes": [0],
+    "file_split_sizes": [10, 20, 50],
     "segment_sizes": [5],
-    "threads": [1],
+    "threads": [2],
     "cores": [8]
 }
