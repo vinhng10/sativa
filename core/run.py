@@ -2,7 +2,7 @@ import argparse
 import json
 from pathlib import Path
 
-from experiment import Experiment
+from experiment import Experiment, SubExperiment
 from utils import get_parameters_dicts
 
 
