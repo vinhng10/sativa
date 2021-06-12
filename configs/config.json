@@ -5,8 +5,11 @@
     "cluster": "mahti",
     "node": "interactive",
     "tool": "swift",
-    "file_split_sizes": [10, 20, 50],
+    "data_dir": "/scratch/project_2004396/vinh/",
+    "file_sizes": [1, 5, 10, 20, 50],
+    "file_split_sizes": [0],
     "segment_sizes": [5],
     "threads": [2],
     "cores": [8]
 }
+
