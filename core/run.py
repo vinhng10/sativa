@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from experiment import Experiment, SubExperiment
-from utils import get_parameters_dicts
+from utils import get_file_of_size, get_parameters_dicts
 
 
 if __name__ == "__main__":
@@ -14,8 +14,6 @@ if __name__ == "__main__":
     # Parse argument:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-f", "--file", required=True,
-                        help="Path to the file to be transfered.")
     parser.add_argument("-c", "--cfg", required=True,
                         help="Path to the experiment config file.")
 
@@ -25,15 +23,13 @@ if __name__ == "__main__":
     with open(args.cfg, "r") as f:
         config = json.load(f)
 
-    # Get file path:
-    file = Path(args.file)
-
     ###########################################################################
     ### EXPERIMENT RUN                                                      ###
     ###########################################################################
 
     # Get parameter iterator:
     parameters = get_parameters_dicts(
+        file_size=config["file_sizes"],
         file_split_size=config["file_split_sizes"],
         segment_size=config["segment_sizes"],
         thread=config["threads"],
@@ -51,15 +47,20 @@ if __name__ == "__main__":
         #    parameter["thread"], parameter["core"]
         #)
 
+        # Get or create file of the specified size for experimenting:
+        file = get_file_of_size(parameter["file_size"], config["data_dir"])
+
+        # Run experiment:
         experiment = SubExperiment(
             config["db"], file, config["version"], config["bucket"],
             config["cluster"], config["node"], config["tool"],
             parameter["file_split_size"], parameter["segment_size"],
             parameter["thread"], parameter["core"]
         )
-
         results = experiment.run()
 
+        # Delete the uploaded bucket in Allas to avoid conflicts with other
+        # transfers:
         experiment.delete_bucket()
 
         print("Finished experiment.\n")
