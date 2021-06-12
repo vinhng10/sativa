@@ -107,6 +107,42 @@ def save_to_db(db: AnyPath, table: str, *args) -> bool:
         return False
 
 
+def get_file_of_size(size: int, save_dir: AnyPath) -> Path:
+    """
+    Create a binary file with a specific size.
+
+    Parameters
+    ----------
+    size: int
+        Size (in gigabyte) of the file to be created.
+    save_dir: AnyPath
+        Directory to save the created file.
+
+    Returns
+    -------
+    created_file_path: Path
+        Path to the created file.
+
+    """
+    if not isinstance(size, int) or size <= 0:
+        raise ValueError(f"Expected size to be positive integer, but got "
+                         f"{size} instead.")
+
+    save_dir = Path(save_dir)
+    save_dir.mkdir(parents=True, exist_ok=True)
+    created_file_path = save_dir / f"{size}GB.bin"
+
+    if created_file_path.exists():
+        print(f"File {created_file_path} already exists.")
+        return created_file_path
+    else:
+        print(f"Creating file {created_file_path} of size {size}")
+        with open(created_file_path, "wb") as f:
+            f.truncate(size * (1024 ** 3))
+        print(f"File {created_file_path} created.")
+        return created_file_path
+
+
 def split_file(file: AnyPath, file_split_size: int = 0,
                file_split_chunk: int = 0,
                suffix_length: int = 4) -> List[Path]:
