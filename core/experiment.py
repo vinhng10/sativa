@@ -161,7 +161,7 @@ class Experiment(BaseExperiment):
             file_split_size=self.file_split_size,
             file_split_chunk=self.cores
         )
-
+        
         # Spawn a pool of workers to process transfer:
         with Pool(self.cores) as pool:
             results = pool.map(self.run_sub_experiment, split_files)

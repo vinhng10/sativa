@@ -1,15 +1,15 @@
 {
-    "db": "./db/prod.db",
-    "version": "0.0.0",
+    "db": "./db/prod_2.db",
+    "version": "1.0.0",
     "bucket": "experiements",
     "cluster": "mahti",
     "node": "interactive",
     "tool": "swift",
-    "data_dir": "/scratch/project_2004396/vinh/",
-    "file_sizes": [1, 5, 10, 20, 50],
-    "file_split_sizes": [0],
+    "data_dir": "/scratch/project_2004396/vinh/data",
+    "file_sizes": [500, 1000, 2000, 5000],
+    "file_split_sizes": [0, 100, 500, 1000],
     "segment_sizes": [5],
-    "threads": [2],
-    "cores": [8]
+    "threads": [1],
+    "cores": [2, 4, 8]
 }
 
