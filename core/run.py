@@ -1,6 +1,8 @@
 import argparse
 import json
+import shutil
 from pathlib import Path
+from multiprocessing import Pool
 
 from experiment import Experiment, SubExperiment
 from utils import get_file_of_size, get_parameters_dicts
@@ -40,18 +42,11 @@ if __name__ == "__main__":
     for parameter in parameters:
         print(f"Run experiment with {parameter} ...")
 
-        #experiment = Experiment(
-        #    config["db"], file, config["version"], config["bucket"],
-        #    config["cluster"], config["node"], config["tool"],
-        #    parameter["file_split_size"], parameter["segment_size"],
-        #    parameter["thread"], parameter["core"]
-        #)
-
         # Get or create file of the specified size for experimenting:
         file = get_file_of_size(parameter["file_size"], config["data_dir"])
 
         # Run experiment:
-        experiment = SubExperiment(
+        experiment = Experiment(
             config["db"], file, config["version"], config["bucket"],
             config["cluster"], config["node"], config["tool"],
             parameter["file_split_size"], parameter["segment_size"],
@@ -60,7 +55,8 @@ if __name__ == "__main__":
         results = experiment.run()
 
         # Delete the uploaded bucket in Allas to avoid conflicts with other
-        # transfers:
+        # transfers. Also, remove data to avoid exceeding disk storage quota:
         experiment.delete_bucket()
+        shutil.rmtree(config["data_dir"])
 
         print("Finished experiment.\n")

@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import subprocess
 from enum import Enum
@@ -130,7 +131,7 @@ def get_file_of_size(size: int, save_dir: AnyPath) -> Path:
 
     save_dir = Path(save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
-    created_file_path = save_dir / f"{size}GB.bin"
+    created_file_path = save_dir / f"{size}GB.h5"
 
     if created_file_path.exists():
         print(f"File {created_file_path} already exists.")
