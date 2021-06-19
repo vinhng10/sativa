@@ -45,18 +45,30 @@ if __name__ == "__main__":
         # Get or create file of the specified size for experimenting:
         file = get_file_of_size(parameter["file_size"], config["data_dir"])
 
-        # Run experiment:
-        experiment = Experiment(
-            config["db"], file, config["version"], config["bucket"],
-            config["cluster"], config["node"], config["tool"],
-            parameter["file_split_size"], parameter["segment_size"],
-            parameter["thread"], parameter["core"]
-        )
-        results = experiment.run()
-
-        # Delete the uploaded bucket in Allas to avoid conflicts with other
-        # transfers. Also, remove data to avoid exceeding disk storage quota:
-        experiment.delete_bucket()
-        shutil.rmtree(config["data_dir"])
-
-        print("Finished experiment.\n")
+        try:
+            # Run experiment:
+            experiment = Experiment(
+                config["db"], file, config["version"], config["bucket"],
+                config["cluster"], config["node"], config["tool"],
+                parameter["file_split_size"], parameter["segment_size"],
+                parameter["thread"], parameter["core"]
+            )
+            results = experiment.run()
+        except Exception as e:
+            print(e)
+            print("Retrying ... ")
+            experiment.delete_bucket()
+            # Run experiment:
+            experiment = Experiment(
+                config["db"], file, config["version"], config["bucket"],
+                config["cluster"], config["node"], config["tool"],
+                parameter["file_split_size"], parameter["segment_size"],
+                parameter["thread"], parameter["core"]
+            )
+            results = experiment.run()
+        finally:
+            # Delete the uploaded bucket in Allas to avoid conflicts with other
+            # transfers. Also, remove data to avoid exceeding disk storage quota:
+            experiment.delete_bucket()
+            shutil.rmtree(config["data_dir"])
+            print("Finished experiment.\n")
