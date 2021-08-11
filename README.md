@@ -16,14 +16,15 @@ tool used and the specified parameters.
 The current implementation works like grid search, that is, using each tool on a set of different sets of parameters and 
 record their performance for post analysis.
 
-There are two way to run this project: [interative job]() and [batch job](). Please follow the links for detailed instructions. 
+There are two way to run this project: [interative job](https://docs.csc.fi/computing/running/interactive-usage/) 
+and [batch job](https://docs.csc.fi/computing/running/getting-started/). Please follow the links for detailed instructions. 
 At the moment, it's recommended to go with the interactive job for better control. However, the trade-off is that only limited
 resources can be reserved for the interative job (maximum 8 CPU cores). Batch job has more resource capacity.
 
 After setting up the job, establish connection with Allas from CSC Puhti/Mahti. Each
 tool will have different set of commands. Instructions can be found [here](https://docs.csc.fi/data/Allas/).
 
-From there, specify parameters for the experiment in [configs/config.json]():
+From there, specify parameters for the experiment in [configs/config.json](https://github.com/vinhng10/sativa/blob/main/configs/config.json):
 - db: path to the experiment database
 - version: version of the experiment
 - bucket: name of the bucket to save data on Allas
@@ -43,17 +44,18 @@ python3 core/run.py
 ```
 
 Additional Information:
-- [core/utils.py]() contains functional API to run swift, s3cmd, and rclone tools.  
+- [core/utils.py](https://github.com/vinhng10/sativa/blob/main/core/utils.py) contains functional API to run swift, s3cmd, and rclone tools.  
 
-- [core/experiment.py]() contains:
+- [core/experiment.py](https://github.com/vinhng10/sativa/blob/main/core/experiment.py) contains:
   - **SubExperiment**: class to run a given tool on a single file and record the time taken to complete the data transfer.
   - **Experiment**: class to split a file into chunks and use **SubExperiment** on each chunk, then record the total time
     to transfer all data chunks. 
 
-- [core/run.py]() is the main script to launch the experiment. It first read the configuration file and launch experiments
+- [core/run.py](https://github.com/vinhng10/sativa/blob/main/core/run.py) is the main script to launch the experiment. It first read the configuration file and launch experiments
   according to the config file.
 
-The results obtained so far were recorded in [db/prod.db]() and  [db/prod_2.db](). Further experiments can record results
+The results obtained so far were recorded in [db/prod.db](https://github.com/vinhng10/sativa/blob/main/db/prod.db) 
+and [db/prod_2.db](https://github.com/vinhng10/sativa/blob/main/db/prod_2.db). Further experiments can record results
 to these databases.
 
 
